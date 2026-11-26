@@ -397,12 +397,22 @@ class GamoAICog(commands.Cog):
             return
         model = self.settings.vision_model if use_vision else self.settings.llm_model
         messages = HermesClient.build_messages(system_prompt, text, image_parts)
-        reply = await client.chat(
-            messages,
-            guild_id=chat_message.guild_id,
-            channel_id=chat_message.channel_id,
-            model=model,
-        )
+        typing = getattr(source.channel, "typing", None)
+        if typing is not None:
+            async with typing():
+                reply = await client.chat(
+                    messages,
+                    guild_id=chat_message.guild_id,
+                    channel_id=chat_message.channel_id,
+                    model=model,
+                )
+        else:
+            reply = await client.chat(
+                messages,
+                guild_id=chat_message.guild_id,
+                channel_id=chat_message.channel_id,
+                model=model,
+            )
         if not reply:
             return
         for chunk in split_message(reply):
