@@ -2,8 +2,8 @@
 
 import asyncio
 
-from cogaicog.buffer import ChannelManager
-from cogaicog.models import ChatMessage
+from gamoaicog.buffer import ChannelManager
+from gamoaicog.models import ChatMessage
 
 
 class FakeClock:

@@ -1,0 +1,6 @@
+{
+  "author": ["Joaquín Gamonal"],
+  "short": "Hermes-backed casual chatter with guild-scoped memory",
+  "description": "A Red-DiscordBot community cog. The Red cog owns Discord behavior and Hindsight memory; a separate Hermes profile behind a loopback OpenAI-compatible API supplies the agent.",
+  "install_msg": "Install the gamoaicog package with `[p]cog install GamoAI gamoaicog`, set the cog environment variables in Red's service environment, then `[p]load gamoaicog`."
+}

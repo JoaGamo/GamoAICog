@@ -2,7 +2,7 @@
 
 import pytest
 
-from cogaicog.settings import Settings
+from gamoaicog.settings import Settings
 
 LLM = {
     "LLM_ENDPOINT": "http://llm.test/v1",

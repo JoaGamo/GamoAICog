@@ -2,8 +2,8 @@
 
 import pytest
 
-from cogaicog import constants
-from cogaicog.constants import (
+from gamoaicog import constants
+from gamoaicog.constants import (
     BANK_PREFIX,
     SOURCE_PASSIVE,
     SOURCE_REPLY,

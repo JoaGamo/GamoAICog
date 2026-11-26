@@ -4,7 +4,7 @@ import asyncio
 
 from aioresponses import aioresponses
 
-from cogaicog.hindsight import HindsightClient, memory_item
+from gamoaicog.hindsight import HindsightClient, memory_item
 
 BASE = "http://hindsight.test"
 BANK = "gamoaibot-guild-7"

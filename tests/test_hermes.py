@@ -5,8 +5,8 @@ import asyncio
 import pytest
 from aioresponses import aioresponses
 
-from cogaicog.hermes import HermesClient, HermesError, session_ids
-from cogaicog.models import MediaAttachment
+from gamoaicog.hermes import HermesClient, HermesError, session_ids
+from gamoaicog.models import MediaAttachment
 
 ENDPOINT = "http://hermes.test/v1"
 CHAT_URL = f"{ENDPOINT}/chat/completions"

@@ -2,7 +2,7 @@
 
 import pytest
 
-from cogaicog.trigger import TriggerResult, cooldown_remaining, should_reply
+from gamoaicog.trigger import TriggerResult, cooldown_remaining, should_reply
 
 BASE = {
     "is_bot": False,

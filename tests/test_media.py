@@ -2,7 +2,7 @@
 
 import pytest
 
-from cogaicog.media import youtube_ids
+from gamoaicog.media import youtube_ids
 
 VIDEO_ID = "dQw4w9WgXcQ"
 

@@ -1,0 +1,12 @@
+{
+  "author": ["Joaquín Gamonal"],
+  "short": "Hermes-backed casual chatter with guild-scoped memory",
+  "description": "Random-chance replies in allowed channels, always-on mentions/replies, multimodal messages through a separate Hermes profile, and long-term memory in per-guild Hindsight banks. Default random chance is 0%.",
+  "install_msg": "Set LLM_ENDPOINT, LLM_API_KEY and HINDSIGHT_API_KEY in Red's environment, then `[p]load gamoaicog` and use `[p]gamoai` owner commands. No Discord token is needed.",
+  "end_user_data_statement": "This cog processes Discord message text and attachments. It stores message text in Hindsight banks scoped to guild and user IDs, and sends message text plus inline images to a self-hosted Hermes API server. It ignores NSFW channels, bots, webhooks and DMs, and skips messages matching political or private-info patterns. Owners can purge entire banks with owner-only commands.",
+  "min_bot_version": "3.5.0",
+  "min_python_version": [3, 10, 0],
+  "requirements": ["aiohttp>=3.9"],
+  "tags": ["ai", "hermes", "hindsight", "memory"],
+  "type": "COG"
+}

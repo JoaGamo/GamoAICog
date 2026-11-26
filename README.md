@@ -10,9 +10,10 @@ Architecture is summarized here and in `docs/DEPLOYMENT.md`; change the locked b
 distribution.yaml   Hermes profile distribution manifest (gamoaibot)
 config.yaml         Non-secret profile defaults (native memory disabled)
 PERSONA.md          Copy into the profile's SOUL.md
-deploy/profile.env.example  Hermes profile env (API_SERVER_* only)
-deploy/cog.env.example      Red cog env (LLM_*, VISION_*, HINDSIGHT_*, MEDIA_*)
-cog/                Red cog: copy gamoai.py + gamoaicog/ into Red's cogs dir
+info.json           Repo metadata for Red's Downloader (`[p]cog repo add`)
+gamoaicog/          Installable cog package (has its own info.json + setup())
+deploy/             profile.env.example, cog.env.example, systemd unit
+cog/gamoai.py       Legacy single-file entry point (manual installs only)
 tests/              Unit + opt-in integration tests
 runtime/            Local-only media cache and terminal cwd (gitignored)
 ```
@@ -30,7 +31,7 @@ runtime/            Local-only media cache and terminal cwd (gitignored)
 See `docs/DEPLOYMENT.md`. Short version:
 
 1. `hermes profile install github.com/JoaGamo/GamoAICog --name gamoaibot` (or use the local checkout), copy `deploy/profile.env.example` to the profile `.env`, fill it, disable dangerous toolsets, start the API server.
-2. Copy `cog/gamoai.py` and `cog/gamoaicog/` into Red's cogs dir, install requirements, copy `deploy/cog.env.example` to `cog/.env`, fill it, then `[p]load gamoai`.
+2. On the Red host, install as a community cog: `[p]cog repo add GamoAI https://github.com/JoaGamo/GamoAICog` then `[p]cog install GamoAI gamoaicog`. The repo is private, so Red's host needs git credentials. Downloader does not load `.env`: put the cog variables from `deploy/cog.env.example` into Red's service environment (`EnvironmentFile=` in its systemd unit), then `[p]load gamoaicog`.
 3. As bot owner: `[p]gamoai channel add #channel`, `[p]gamoai chance 5`, `[p]gamoai status`.
 
 No `DISCORD_BOT_TOKEN` is needed anywhere: Red already authenticates to Discord. The profile is not a Discord gateway and the cog is not a standalone bot.
