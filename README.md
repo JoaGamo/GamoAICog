@@ -36,7 +36,7 @@ See `docs/DEPLOYMENT.md`. Short version:
 
 No `DISCORD_BOT_TOKEN` is needed anywhere: Red already authenticates to Discord. The profile is not a Discord gateway and the cog is not a standalone bot.
 
-Secrets are never committed. `LLM_*` and `VISION_*` are the cog's view of the Hermes API server; `VISION_*` falls back to `LLM_*` when blank. If `LLM_ENDPOINT` or `LLM_API_KEY` is missing, the cog loads but makes no AI calls.
+Secrets are never committed. There is one canonical cog-side env file: `cog/.env` (gitignored); `deploy/cog.env.example` is only its template. `LLM_*` and `VISION_*` are the cog's view of the Hermes API server; `VISION_*` falls back to `LLM_*` when blank. If `LLM_ENDPOINT` or `LLM_API_KEY` is missing, the cog loads but makes no AI calls.
 
 ## Owner commands
 
