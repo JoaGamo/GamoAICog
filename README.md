@@ -30,8 +30,8 @@ runtime/            Local-only media cache and terminal cwd (gitignored)
 
 See `docs/DEPLOYMENT.md`. Short version:
 
-1. `hermes profile install github.com/JoaGamo/GamoAICog --name gamoaibot` (or use the local checkout), copy `deploy/profile.env.example` to the profile `.env`, fill it, disable dangerous toolsets, start the API server.
-2. On the Red host, install as a community cog: `[p]cog repo add GamoAI https://github.com/JoaGamo/GamoAICog` then `[p]cog install GamoAI gamoaicog`. The repo is private, so Red's host needs git credentials. Downloader does not load `.env`: put the cog variables from `deploy/cog.env.example` into Red's service environment (`EnvironmentFile=` in its systemd unit), then `[p]load gamoaicog`.
+1. `hermes profile install <repository-url> --name gamoaibot` (or use the local checkout), copy `deploy/profile.env.example` to the profile `.env`, fill it, configure the model with `hermes -p gamoaibot model`, and restrict the API server toolsets.
+2. On the Red host, install as a community cog: `[p]cog repo add GamoAI <repository-url>` then `[p]cog install GamoAI gamoaicog`. The host needs git access to the repo. Downloader does not load `.env`: put the cog variables from `deploy/cog.env.example` into Red's service environment (`EnvironmentFile=` in its systemd unit), then `[p]load gamoaicog`.
 3. As bot owner: `[p]gamoai channel add #channel`, `[p]gamoai chance 5`, `[p]gamoai status`.
 
 No `DISCORD_BOT_TOKEN` is needed anywhere: Red already authenticates to Discord. The profile is not a Discord gateway and the cog is not a standalone bot.

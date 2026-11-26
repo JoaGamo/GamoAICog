@@ -30,7 +30,7 @@ async def client():
     api_key = os.getenv("HINDSIGHT_API_KEY", "")
     if not api_key:
         pytest.skip("HINDSIGHT_API_KEY is not set")
-    base_url = os.getenv("HINDSIGHT_API_URL", "http://<INTERNAL_HOST>:8888")
+    base_url = os.getenv("HINDSIGHT_API_URL", "http://localhost:8888")
     async with aiohttp.ClientSession() as session:
         yield HindsightClient(base_url, api_key, 30.0, session)
 

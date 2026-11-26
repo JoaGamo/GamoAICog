@@ -1,9 +1,5 @@
 # Non-secret defaults for the gamoaibot profile. Secrets live in the profile .env.
-model:
-  default: auto/thrifty
-  provider: custom
-  base_url: http://<PROVIDER_HOST>:20128
-
+# Configure the model/provider locally with `hermes -p gamoaibot model`.
 # The cog, not Hermes, owns Hindsight banks: no native provider, no auto retain/recall.
 agent:
   max_turns: 10
@@ -16,8 +12,9 @@ memory:
   # This profile ships without the Hindsight plugin: no native bank writes.
 
 terminal:
-  # Explicit cwd: the API server exposes tools, so never leave this unbounded.
-  cwd: <LOCAL_HOME>/GamoAICog/runtime
+  # Explicit cwd relative to the profile home: the API server exposes tools,
+  # so never leave this unbounded.
+  cwd: runtime
 
 display:
   show_reasoning: false

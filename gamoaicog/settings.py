@@ -34,7 +34,7 @@ class Settings:
     vision_endpoint: str = ""
     vision_api_key: str = ""
     vision_model: str = ""
-    hindsight_api_url: str = "http://<INTERNAL_HOST>:8888"
+    hindsight_api_url: str = "http://localhost:8888"
     hindsight_api_key: str = ""
     hindsight_timeout: float = 30.0
     hermes_timeout: float = 120.0
@@ -62,7 +62,7 @@ class Settings:
             vision_endpoint=get("VISION_ENDPOINT") or llm_endpoint,
             vision_api_key=get("VISION_API_KEY") or llm_api_key,
             vision_model=get("VISION_MODEL") or llm_model,
-            hindsight_api_url=get("HINDSIGHT_API_URL", "http://<INTERNAL_HOST>:8888"),
+            hindsight_api_url=get("HINDSIGHT_API_URL", "http://localhost:8888"),
             hindsight_api_key=get("HINDSIGHT_API_KEY"),
             hindsight_timeout=_float(e, "HINDSIGHT_TIMEOUT", 30.0),
             hermes_timeout=_float(e, "HERMES_TIMEOUT", 120.0),
