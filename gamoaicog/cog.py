@@ -447,7 +447,7 @@ class GamoAICog(commands.Cog):
 
     # ------------------------------------------------------------------ commands
 
-    @commands.group(name="gamoai")
+    @commands.group(name="gamoai", autohelp=False)
     @checks.is_owner()
     async def gamoai(self, ctx: commands.Context) -> None:
         """Manage GamoAI (bot owner only)."""

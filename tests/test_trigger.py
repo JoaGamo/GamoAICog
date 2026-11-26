@@ -24,6 +24,13 @@ def test_command_prefix_is_never_treated_as_chatter():
     assert not is_command_like("hola", [])
 
 
+def test_gamoai_group_disables_red_autohelp():
+    pytest.importorskip("redbot")
+    from gamoaicog.cog import GamoAICog
+
+    assert GamoAICog.gamoai.autohelp is False
+
+
 def test_default_chance_is_twenty_percent_and_zero_chance_never_draws():
     assert should_reply(**BASE, rng=lambda: 0.1) == TriggerResult(True, "random")
     assert should_reply(**BASE, rng=lambda: 0.3) == TriggerResult(False, "random")
