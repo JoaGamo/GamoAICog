@@ -2,7 +2,7 @@
 
 import pytest
 
-from gamoaicog.trigger import TriggerResult, cooldown_remaining, should_reply
+from gamoaicog.trigger import TriggerResult, cooldown_remaining, is_command_like, should_reply
 
 BASE = {
     "is_bot": False,
@@ -12,6 +12,16 @@ BASE = {
     "channel_allowed": True,
     "ai_enabled": True,
 }
+
+
+def test_command_prefix_is_never_treated_as_chatter():
+    prefixes = ["!", "?"]
+    assert is_command_like("!gamoai status", prefixes)
+    assert is_command_like("  ?help", prefixes)
+    assert not is_command_like("hola !gamoai status", prefixes)
+    assert not is_command_like("gamoai status", prefixes)
+    assert not is_command_like("", prefixes)
+    assert not is_command_like("hola", [])
 
 
 def test_default_chance_is_twenty_percent_and_zero_chance_never_draws():

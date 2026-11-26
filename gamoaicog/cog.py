@@ -29,9 +29,9 @@ from .hindsight import HindsightClient, memory_item
 from .media import MediaPipeline
 from .models import ChatMessage
 from .settings import Settings
-from .trigger import should_reply
+from .trigger import is_command_like, should_reply
 
-log = logging.getLogger("redai")
+log = logging.getLogger("red.gamoai")
 
 CONFIG_IDENTIFIER = 0x47414D4149434F47
 
@@ -201,6 +201,23 @@ class GamoAICog(commands.Cog):
     async def _eligible(self, message: discord.Message) -> bool:
         return await self._eligible_reason(message) is None
 
+    async def _is_command(self, message: discord.Message) -> bool:
+        """Never treat a command invocation as casual chatter."""
+        try:
+            ctx = await self.bot.get_context(message)
+            if ctx.valid:
+                return True
+        except Exception:
+            log.debug("get_context failed for message %s", message.id, exc_info=True)
+        try:
+            prefixes = await self.bot.get_prefix(message)
+        except Exception:
+            log.debug("get_prefix failed for message %s", message.id, exc_info=True)
+            return False
+        if isinstance(prefixes, str):
+            prefixes = (prefixes,)
+        return is_command_like(message.content, prefixes)
+
     def _system_prompt(self, user_context: str, guild_context: str) -> str:
         parts = [SOUL]
         if user_context:
@@ -319,6 +336,9 @@ class GamoAICog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
+        if await self._is_command(message):
+            log.info("msg ignored: command channel=%s", getattr(message.channel, "id", 0))
+            return
         skip = await self._eligible_reason(message)
         if skip is not None:
             log.info(

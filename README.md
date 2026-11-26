@@ -24,7 +24,7 @@ runtime/            Local-only media cache and terminal cwd (gitignored)
 - The `gamoaibot` Hermes profile owns the agent loop and response generation. It is reached over its loopback OpenAI-compatible API server at `POST /v1/chat/completions`.
 - Sessions are channel-scoped: `X-Hermes-Session-Id: discord-<guild_id>-<channel_id>` and `X-Hermes-Session-Key: discord:<guild_id>:<channel_id>`.
 - Memory banks are computed in the cog: `gamoaibot-user-<guild_id>-<user_id>` and `gamoaibot-guild-<guild_id>`. Nothing is shared across guilds. Hermes' native Hindsight provider is disabled on the profile.
-- Default random reply chance is **20%** inside allowed channels (owner-configurable); direct mentions/replies always answer.
+- Default random reply chance is **20%** inside allowed channels (owner-configurable); direct mentions/replies always answer. Messages that resolve to a command, or start with a bot prefix, are never treated as chatter.
 
 ## Quick start
 

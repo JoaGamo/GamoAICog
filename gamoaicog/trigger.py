@@ -3,7 +3,18 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Iterable
 from dataclasses import dataclass
+
+
+def is_command_like(text: str, prefixes: Iterable[str]) -> bool:
+    """True when a message starts with one of the bot's command prefixes.
+
+    Kept pure so the guardrail can be tested without Red. In the cog this is
+    combined with `get_context()` so resolved commands are caught too.
+    """
+    stripped = (text or "").lstrip()
+    return any(prefix and stripped.startswith(prefix) for prefix in prefixes)
 
 
 @dataclass(frozen=True)
