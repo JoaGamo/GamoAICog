@@ -109,6 +109,17 @@ class GamoAICog(commands.Cog):
             log.warning("GamoAI loaded with AI disabled: set LLM_ENDPOINT and LLM_API_KEY")
         if not self.settings.hindsight_enabled:
             log.warning("GamoAI loaded with Hindsight disabled: set HINDSIGHT_API_KEY")
+        cfg = await self.config.all()
+        log.info(
+            "GamoAI ready: ai=%s hindsight=%s channels=%s chance=%.0f%% cooldown=%.0fs buffer=%s/%ss",
+            self.settings.ai_enabled,
+            self.settings.hindsight_enabled,
+            len(cfg["channels"]),
+            float(cfg["chance"]) * 100,
+            float(cfg["cooldown"]),
+            cfg["buffer_count"],
+            float(cfg["buffer_idle"]),
+        )
 
     async def cog_unload(self) -> None:
         if self._idle_task is not None:
@@ -173,16 +184,22 @@ class GamoAICog(commands.Cog):
         author = getattr(resolved, "author", None)
         return author is not None and getattr(author, "id", None) == bot_user.id
 
-    async def _eligible(self, message: discord.Message) -> bool:
+    async def _eligible_reason(self, message: discord.Message) -> str | None:
+        """None means eligible; otherwise the skip reason."""
         if message.guild is None:  # no DMs
-            return False
+            return "dm"
         if message.author.bot or message.webhook_id is not None:
-            return False
+            return "automated"
         channel = message.channel
         if getattr(channel, "is_nsfw", lambda: False)():
-            return False
+            return "nsfw"
         cfg = await self.config.all()
-        return channel.id in cfg["channels"]
+        if channel.id not in cfg["channels"]:
+            return "channel-not-allowed"
+        return None
+
+    async def _eligible(self, message: discord.Message) -> bool:
+        return await self._eligible_reason(message) is None
 
     def _system_prompt(self, user_context: str, guild_context: str) -> str:
         parts = [SOUL]
@@ -244,7 +261,10 @@ class GamoAICog(commands.Cog):
             log.exception("Hindsight retain failed for reply")
 
     async def _flush_batch(self, channel_id: int, batch: list[ChatMessage]) -> None:
-        if self._hindsight is None or not self.settings.hindsight_enabled or not batch:
+        if not batch:
+            return
+        log.info("passive flush: channel=%s count=%d", channel_id, len(batch))
+        if self._hindsight is None or not self.settings.hindsight_enabled:
             return
         guild_id = batch[0].guild_id
         document_id = f"discord-{guild_id}-{channel_id}-passive-{int(batch[0].sent_at.timestamp())}"
@@ -299,13 +319,24 @@ class GamoAICog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        if not await self._eligible(message):
+        skip = await self._eligible_reason(message)
+        if skip is not None:
+            log.info(
+                "msg ignored: channel=%s author=%s reason=%s",
+                getattr(message.channel, "id", 0), message.author.id, skip,
+            )
             return
         cfg = await self.config.all()
         if not cfg["enabled"]:
+            log.info("msg ignored: AI toggled off by owner, channel=%s", message.channel.id)
             return
         if is_blocked_topic(message.content):
+            log.info("msg ignored: blocked topic, channel=%s", message.channel.id)
             return
+        log.info(
+            "msg seen: guild=%s channel=%s author=%s content_len=%d",
+            message.guild.id, message.channel.id, message.author.id, len(message.content),
+        )
 
         channel_id = message.channel.id
         mention = self._is_mention(message, self.bot.user)
@@ -323,6 +354,10 @@ class GamoAICog(commands.Cog):
                 is_reply=reply,
                 chance=float(cfg["chance"]),
                 remaining=self.manager.cooldown_remaining(channel_id, float(cfg["cooldown"])),
+            )
+            log.info(
+                "turn decision: channel=%s reply=%s reason=%s",
+                channel_id, decision.reply, decision.reason,
             )
             chat_message = ChatMessage(
                 guild_id=message.guild.id,
@@ -372,6 +407,10 @@ class GamoAICog(commands.Cog):
             return
         for chunk in split_message(reply):
             await source.channel.send(chunk)
+        log.info(
+            "reply sent: channel=%s chars=%d model=%s",
+            chat_message.channel_id, len(reply), model,
+        )
         self.manager.mark_reply(chat_message.channel_id)
         await self._retain_turn(chat_message, reply)
 
