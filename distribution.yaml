@@ -22,39 +22,3 @@ env_requires:
     description: "Enable the API server"
     required: false
     default: "true"
-  - name: HINDSIGHT_API_URL
-    description: "Hindsight REST base URL (used by the cog, not by Hermes)"
-    required: false
-    default: "http://<INTERNAL_HOST>:8888"
-  - name: HINDSIGHT_API_KEY
-    description: "Hindsight API key (used by the cog)"
-    required: false
-    default: ""
-  - name: HINDSIGHT_TIMEOUT
-    description: "Hindsight REST timeout in seconds"
-    required: false
-    default: "30"
-  - name: LLM_ENDPOINT
-    description: "OpenAI-compatible endpoint the cog calls (Hermes API server)"
-    required: false
-    default: ""
-  - name: LLM_API_KEY
-    description: "Bearer key for LLM_ENDPOINT"
-    required: false
-    default: ""
-  - name: LLM_MODEL
-    description: "Model/profile name advertised to the cog"
-    required: false
-    default: "gamoaibot"
-  - name: VISION_ENDPOINT
-    description: "Optional separate multimodal endpoint; falls back to LLM_ENDPOINT"
-    required: false
-    default: ""
-  - name: VISION_API_KEY
-    description: "Optional separate multimodal key; falls back to LLM_API_KEY"
-    required: false
-    default: ""
-  - name: VISION_MODEL
-    description: "Optional separate multimodal model; falls back to LLM_MODEL"
-    required: false
-    default: ""

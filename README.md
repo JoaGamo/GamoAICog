@@ -10,7 +10,8 @@ Architecture is summarized here and in `docs/DEPLOYMENT.md`; change the locked b
 distribution.yaml   Hermes profile distribution manifest (gamoaibot)
 config.yaml         Non-secret profile defaults (native memory disabled)
 PERSONA.md          Copy into the profile's SOUL.md
-.env.EXAMPLE        Every variable, no real values
+deploy/profile.env.example  Hermes profile env (API_SERVER_* only)
+deploy/cog.env.example      Red cog env (LLM_*, VISION_*, HINDSIGHT_*, MEDIA_*)
 cog/                Red cog: copy gamoai.py + gamoaicog/ into Red's cogs dir
 tests/              Unit + opt-in integration tests
 runtime/            Local-only media cache and terminal cwd (gitignored)
@@ -28,9 +29,11 @@ runtime/            Local-only media cache and terminal cwd (gitignored)
 
 See `docs/DEPLOYMENT.md`. Short version:
 
-1. `hermes profile install github.com/JoaGamo/GamoAICog --name gamoaibot` (or use the local checkout), fill the profile `.env`, disable dangerous toolsets, start the API server.
-2. Copy `cog/gamoai.py` and `cog/gamoaicog/` into Red's `cogs/` directory, install requirements, copy `.env.EXAMPLE` to `cog/.env`, fill it, then `[p]load gamoai`.
+1. `hermes profile install github.com/JoaGamo/GamoAICog --name gamoaibot` (or use the local checkout), copy `deploy/profile.env.example` to the profile `.env`, fill it, disable dangerous toolsets, start the API server.
+2. Copy `cog/gamoai.py` and `cog/gamoaicog/` into Red's cogs dir, install requirements, copy `deploy/cog.env.example` to `cog/.env`, fill it, then `[p]load gamoai`.
 3. As bot owner: `[p]gamoai channel add #channel`, `[p]gamoai chance 5`, `[p]gamoai status`.
+
+No `DISCORD_BOT_TOKEN` is needed anywhere: Red already authenticates to Discord. The profile is not a Discord gateway and the cog is not a standalone bot.
 
 Secrets are never committed. `LLM_*` and `VISION_*` are the cog's view of the Hermes API server; `VISION_*` falls back to `LLM_*` when blank. If `LLM_ENDPOINT` or `LLM_API_KEY` is missing, the cog loads but makes no AI calls.
 
