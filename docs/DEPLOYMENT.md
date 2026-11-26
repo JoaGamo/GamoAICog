@@ -55,7 +55,7 @@ There is one canonical cog-side env file: `cog/.env` (gitignored). `deploy/cog.e
 
 For a manual install instead of Downloader, copy the `gamoaicog/` directory into the instance's CogManager install path (`<instance_data>/cogs/CogManager/cogs/`), not just `<instance_data>/cogs/`. `cog/gamoai.py` is a legacy wrapper only.
 
-Then in Discord, as bot owner: `[p]gamoai status`, `[p]gamoai channel add #test`, `[p]gamoai chance 5`.
+Then in Discord, as bot owner: `[p]gamoai status`, `[p]gamoai channel add #test`. Use `[p]gamoai chance 0` if you want no random chatter.
 
 Enable Message Content intent on the bot application, or the cog will not see
 message text.

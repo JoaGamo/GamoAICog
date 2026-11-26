@@ -14,12 +14,14 @@ BASE = {
 }
 
 
-def test_random_chance_defaults_to_zero_and_never_draws():
+def test_default_chance_is_twenty_percent_and_zero_chance_never_draws():
+    assert should_reply(**BASE, rng=lambda: 0.1) == TriggerResult(True, "random")
+    assert should_reply(**BASE, rng=lambda: 0.3) == TriggerResult(False, "random")
+
     def explode():
         raise AssertionError("rng must not be consulted at 0% chance")
 
-    assert should_reply(**BASE, rng=explode) == TriggerResult(False, "chance-zero")
-    assert should_reply(**BASE, chance=0.0, rng=lambda: 0.0) == TriggerResult(False, "chance-zero")
+    assert should_reply(**BASE, chance=0.0, rng=explode) == TriggerResult(False, "chance-zero")
 
 
 def test_random_draw_is_strictly_below_chance():

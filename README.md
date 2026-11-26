@@ -24,7 +24,7 @@ runtime/            Local-only media cache and terminal cwd (gitignored)
 - The `gamoaibot` Hermes profile owns the agent loop and response generation. It is reached over its loopback OpenAI-compatible API server at `POST /v1/chat/completions`.
 - Sessions are channel-scoped: `X-Hermes-Session-Id: discord-<guild_id>-<channel_id>` and `X-Hermes-Session-Key: discord:<guild_id>:<channel_id>`.
 - Memory banks are computed in the cog: `gamoaibot-user-<guild_id>-<user_id>` and `gamoaibot-guild-<guild_id>`. Nothing is shared across guilds. Hermes' native Hindsight provider is disabled on the profile.
-- Default random reply chance is **0%**: the bot stays quiet until the owner opts in.
+- Default random reply chance is **20%** inside allowed channels (owner-configurable); direct mentions/replies always answer.
 
 ## Quick start
 
@@ -32,7 +32,7 @@ See `docs/DEPLOYMENT.md`. Short version:
 
 1. `hermes profile install <repository-url> --name gamoaibot` (or use the local checkout), copy `deploy/profile.env.example` to the profile `.env`, fill it, configure the model with `hermes -p gamoaibot model`, and restrict the API server toolsets.
 2. On the Red host, install as a community cog: `[p]cog repo add GamoAI <repository-url>` then `[p]cog install GamoAI gamoaicog`. The host needs git access to the repo. Downloader does not load `.env`: put the cog variables from `deploy/cog.env.example` into Red's service environment (`EnvironmentFile=` in its systemd unit), then `[p]load gamoaicog`.
-3. As bot owner: `[p]gamoai channel add #channel`, `[p]gamoai chance 5`, `[p]gamoai status`.
+3. As bot owner: `[p]gamoai channel add #channel`, `[p]gamoai status` (set `[p]gamoai chance 0` for a silent bot).
 
 No `DISCORD_BOT_TOKEN` is needed anywhere: Red already authenticates to Discord. The profile is not a Discord gateway and the cog is not a standalone bot.
 
@@ -47,7 +47,7 @@ All commands require the Red bot owner ID.
 | `gamoai status` | Config summary, AI/Hindsight readiness, buffered counts (no secrets) |
 | `gamoai toggle` | Enable/disable AI replies |
 | `gamoai channel add/remove/list [channel]` | Channel allowlist |
-| `gamoai chance <0-100>` | Random reply chance (default 0) |
+| `gamoai chance <0-100>` | Random reply chance (default 20) |
 | `gamoai cooldown <seconds>` | Per-channel cooldown (default 30) |
 | `gamoai buffer <count> <idle_seconds>` | Passive flush thresholds (default 15 / 180) |
 | `gamoai model chat/vision <name>` | Runtime model override |

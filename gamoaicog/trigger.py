@@ -29,7 +29,7 @@ def should_reply(
     blocked_topic: bool = False,
     is_mention: bool = False,
     is_reply: bool = False,
-    chance: float = 0.0,
+    chance: float = 0.2,
     remaining: float = 0.0,
     rng=None,
 ) -> TriggerResult:

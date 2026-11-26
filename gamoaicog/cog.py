@@ -77,7 +77,7 @@ class GamoAICog(commands.Cog):
         self.config.register_global(
             enabled=True,
             channels=[],
-            chance=0.0,
+            chance=0.2,
             cooldown=30.0,
             buffer_count=15,
             buffer_idle=180.0,
@@ -485,7 +485,7 @@ class GamoAICog(commands.Cog):
 
     @gamoai.command(name="chance")
     async def set_chance(self, ctx: commands.Context, percent: float) -> None:
-        """Random reply chance, 0-100. Default 0."""
+        """Random reply chance, 0-100. Default 20."""
         if not 0 <= percent <= 100:
             await ctx.send("El valor tiene que estar entre 0 y 100.")
             return
