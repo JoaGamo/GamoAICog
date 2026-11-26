@@ -97,7 +97,7 @@ class HindsightClient:
         budget: str = "mid",
         limit: int = 5,
     ) -> list[dict]:
-        payload = {"query": query, "budget": budget}
+        payload: dict[str, object] = {"query": query, "budget": budget}
         if tags:
             payload["tags"] = tags
             payload["tags_match"] = "any"

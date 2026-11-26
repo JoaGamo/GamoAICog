@@ -7,8 +7,8 @@ memory:
   memory_enabled: false
   user_profile_enabled: false
   provider: ""
-  auto_retain: false
-  auto_recall: false
+  # auto_retain/auto_recall are Hindsight plugin settings, not config.yaml keys.
+  # This profile ships without the Hindsight plugin: no native bank writes.
 
 terminal:
   # Explicit cwd: the API server exposes tools, so never leave this unbounded.
