@@ -19,8 +19,8 @@ from .buffer import ChannelManager
 from .constants import (
     SOURCE_PASSIVE,
     SOURCE_REPLY,
+    blocked_topic_reason,
     guild_bank,
-    is_blocked_topic,
     scope_tags,
     user_bank,
 )
@@ -330,8 +330,9 @@ class GamoAICog(commands.Cog):
         if not cfg["enabled"]:
             log.info("msg ignored: AI toggled off by owner, channel=%s", message.channel.id)
             return
-        if is_blocked_topic(message.content):
-            log.info("msg ignored: blocked topic, channel=%s", message.channel.id)
+        blocked = blocked_topic_reason(message.content)
+        if blocked is not None:
+            log.info("msg ignored: blocked topic=%s, channel=%s", blocked, message.channel.id)
             return
         log.info(
             "msg seen: guild=%s channel=%s author=%s content_len=%d",

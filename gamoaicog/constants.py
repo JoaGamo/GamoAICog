@@ -43,16 +43,24 @@ def scope_tags(guild_id: int, channel_id: int, user_id: int | None, source: str)
 # strings. This is a guardrail, not a moderation system; false positives are
 # cheaper than persisting private data into a memory bank.
 _BLOCKED_PATTERNS = (
-    re.compile(r"\b(eleccione?s|votos?|partido\s+pol[ií]tico|pol[ií]tica|campa[aã]n?a\s+pol[ií]tica)\b", re.I),
-    re.compile(r"\b(president[ea]|senador|diputado|gobernador)\b", re.I),
-    re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+"),
-    re.compile(r"\b(?:\+?54\s?)?(?:\d[\s.-]?){10,13}\b"),
-    re.compile(r"\b(?:\d[ -]?){13,19}\b"),
+    ("politics", re.compile(r"\b(eleccione?s|votos?|partido\s+pol[ií]tico|pol[ií]tica|campa[aã]n?a\s+pol[ií]tica)\b", re.I)),
+    ("public_office", re.compile(r"\b(president[ea]|senador|diputado|gobernador)\b", re.I)),
+    ("email", re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")),
+    ("phone", re.compile(r"\b(?:\+?54\s?)?(?:\d[\s.-]?){10,13}\b")),
+    ("long_number", re.compile(r"\b(?:\d[ -]?){13,19}\b")),
 )
 
 
+def blocked_topic_reason(text: str) -> str | None:
+    """Which guardrail matched, without echoing the message text."""
+    for name, pattern in _BLOCKED_PATTERNS:
+        if pattern.search(text or ""):
+            return name
+    return None
+
+
 def is_blocked_topic(text: str) -> bool:
-    return any(pattern.search(text or "") for pattern in _BLOCKED_PATTERNS)
+    return blocked_topic_reason(text) is not None
 
 
 def clean_text(text: str) -> str:
