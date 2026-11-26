@@ -1,0 +1,22 @@
+[Unit]
+Description=GamoAI Hermes profile API server (gamoaibot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hermes
+Group=hermes
+WorkingDirectory=<LOCAL_HOME>/GamoAICog
+Environment=HERMES_HOME=<LOCAL_HOME>/.hermes
+ExecStart=<LOCAL_HOME>/.local/bin/hermes -p gamoaibot gateway run
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=read-only
+ProtectSystem=strict
+ReadWritePaths=<LOCAL_HOME>/.hermes <LOCAL_HOME>/GamoAICog/runtime
+
+[Install]
+WantedBy=default.target

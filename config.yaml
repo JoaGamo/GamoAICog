@@ -1,0 +1,18 @@
+# Non-secret defaults for the gamoaibot profile. Secrets live in the profile .env.
+# The cog, not Hermes, owns Hindsight banks: no native provider, no auto retain/recall.
+agent:
+  max_turns: 10
+
+memory:
+  memory_enabled: false
+  user_profile_enabled: false
+  provider: ""
+  auto_retain: false
+  auto_recall: false
+
+terminal:
+  # Explicit cwd: the API server exposes tools, so never leave this unbounded.
+  cwd: <LOCAL_HOME>/GamoAICog/runtime
+
+display:
+  show_reasoning: false
