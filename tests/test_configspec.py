@@ -116,6 +116,13 @@ def test_vision_inherits_chat_overrides_layered_on_environment():
     )
 
 
+def test_reasoning_effort_override_and_clear():
+    env = {**BASE_ENV, "REASONING_EFFORT": "env-effort"}
+    assert apply_overrides(Settings.from_env(env), {}).reasoning_effort == "env-effort"
+    assert apply_overrides(Settings.from_env(env), {"reasoning_effort": "chat-effort"}).reasoning_effort == "chat-effort"
+    assert apply_overrides(Settings.from_env(env), {"reasoning_effort": ""}).reasoning_effort == "env-effort"
+
+
 def test_explicit_vision_override_survives_the_fallback():
     env = {"LLM_API_KEY": "env-key"}
     cfg = {

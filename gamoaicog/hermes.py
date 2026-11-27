@@ -70,6 +70,7 @@ class HermesClient:
         channel_id: int,
         model: str | None = None,
         timeout: float | None = None,
+        reasoning_effort: str | None = None,
     ) -> str:
         session_id, session_key = session_ids(guild_id, channel_id)
         payload = {
@@ -77,6 +78,8 @@ class HermesClient:
             "messages": messages,
             "stream": False,
         }
+        if reasoning_effort:
+            payload["reasoning_effort"] = reasoning_effort
         url = f"{self.endpoint}/chat/completions"
         try:
             async with self.session.post(

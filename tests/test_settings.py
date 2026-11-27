@@ -34,6 +34,12 @@ def test_explicit_vision_settings_override_the_fallback():
     assert settings.llm_endpoint == "http://llm.test/v1"
 
 
+def test_reasoning_effort_defaults_blank_and_reads_environment():
+    assert Settings.from_env(dict(LLM)).reasoning_effort == ""
+    env = {**LLM, "REASONING_EFFORT": "  low  "}
+    assert Settings.from_env(env).reasoning_effort == "low"
+
+
 @pytest.mark.parametrize(
     ("env", "expected"),
     [

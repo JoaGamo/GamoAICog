@@ -1,12 +1,16 @@
 """Hermes chat wire format, channel-scoped sessions, inline images and errors."""
 
 import asyncio
+from types import SimpleNamespace
+from typing import Any
 
 import pytest
 from aioresponses import aioresponses
 
+from gamoaicog.cog import GamoAICog
 from gamoaicog.hermes import HermesClient, HermesError, session_ids
-from gamoaicog.models import MediaAttachment
+from gamoaicog.models import ChatMessage, MediaAttachment
+from gamoaicog.settings import Settings
 
 ENDPOINT = "http://hermes.test/v1"
 CHAT_URL = f"{ENDPOINT}/chat/completions"
@@ -47,6 +51,93 @@ def test_chat_posts_to_completions_with_auth_and_session_headers():
                     "messages": messages,
                     "stream": False,
                 }
+
+    asyncio.run(run())
+
+
+def test_reply_sends_reasoning_effort_only_on_vision_turns():
+    async def run():
+        class Channel:
+            typing = None
+
+            def __init__(self):
+                self.sent = []
+
+            async def send(self, text):
+                self.sent.append(text)
+
+        class Client:
+            def __init__(self):
+                self.calls = []
+
+            async def chat(self, messages, **kwargs):
+                self.calls.append(kwargs)
+                return "ok"
+
+        class Media:
+            def __init__(self, parts):
+                self.parts = parts
+
+            async def prepare(self, source):
+                return self.parts
+
+        class Manager:
+            def mark_reply(self, channel_id):
+                pass
+
+        text_client, vision_client = Client(), Client()
+        cog: Any = object.__new__(GamoAICog)
+        cog._hermes = text_client
+        cog._hermes_vision = vision_client
+        cog.settings = Settings(
+            llm_endpoint="http://llm.test", llm_api_key="k", reasoning_effort="low"
+        )
+        cog.manager = Manager()
+        cog._media = Media([])
+
+        async def no_recall(_message):
+            return "", ""
+
+        async def no_retain(*_args):
+            return None
+
+        cog._recall = no_recall
+        cog._retain_turn = no_retain
+        source: Any = SimpleNamespace(channel=Channel())
+        message = ChatMessage(
+            guild_id=1, channel_id=2, author_id=3, author_name="tester",
+            text="hi", message_id=4,
+        )
+
+        await cog._reply(source, message)
+        assert len(text_client.calls) == 1
+        assert text_client.calls[0]["reasoning_effort"] is None
+        assert vision_client.calls == []
+
+        cog._media = Media([MediaAttachment(url="u", mime="image/png", data_b64="QUJD")])
+        await cog._reply(source, message)
+        assert len(vision_client.calls) == 1
+        assert vision_client.calls[0]["reasoning_effort"] == "low"
+        assert len(text_client.calls) == 1
+
+    asyncio.run(run())
+
+
+def test_chat_sends_reasoning_effort_only_when_set():
+    async def run():
+        client = HermesClient(ENDPOINT, "hermes-secret")
+        payload = {"choices": [{"message": {"content": "ok"}}]}
+        async with client:
+            with aioresponses() as mocked:
+                mocked.post(CHAT_URL, payload=payload)
+                await client.chat([], guild_id=1, channel_id=2, reasoning_effort="low")
+                assert recorded(mocked)[0].kwargs["json"]["reasoning_effort"] == "low"
+
+        async with client:
+            with aioresponses() as mocked:
+                mocked.post(CHAT_URL, payload=payload)
+                await client.chat([], guild_id=1, channel_id=2)
+                assert "reasoning_effort" not in recorded(mocked)[0].kwargs["json"]
 
     asyncio.run(run())
 

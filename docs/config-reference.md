@@ -46,7 +46,7 @@ is split into Discord-sized code blocks.
 
 ## Settings with an environment variable
 
-These 14 settings map one-to-one to cog environment variables. Defaults in the
+These 15 settings map one-to-one to cog environment variables. Defaults in the
 table are the values used when the variable is unset and no chat override exists.
 
 | Command | Env var | Type / default | Constraints |
@@ -57,6 +57,7 @@ table are the values used when the variable is unset and no chat override exists
 | `vision-endpoint` | `VISION_ENDPOINT` | URL, empty | Blank uses `endpoint` |
 | `vision-key` | `VISION_API_KEY` | secret string, empty | Blank uses `key` |
 | `vision-model` | `VISION_MODEL` | string, empty | Blank uses `model` |
+| `reasoning-effort` | `REASONING_EFFORT` | string, empty | Sent on image turns only; blank omits the field |
 | `hindsight-url` | `HINDSIGHT_API_URL` | URL, `http://localhost:8888` | Must start with `http://` or `https://` |
 | `hindsight-key` | `HINDSIGHT_API_KEY` | secret string, empty | - |
 | `hindsight-timeout` | `HINDSIGHT_TIMEOUT` | float, `30` | Minimum `0.1`, seconds |

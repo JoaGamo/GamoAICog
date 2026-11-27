@@ -77,10 +77,11 @@ exact example; endpoint examples always include the scheme.
 ```
 
 Settings: `endpoint`, `key`, `model`, `vision-endpoint`, `vision-key`,
-`vision-model`, `hindsight-url`, `hindsight-key`, `hindsight-timeout`,
-`hermes-timeout`, `media-cache-dir`, `media-max-bytes`, `recall-budget`,
-`recall-limit`, `chance`, `cooldown`, `buffer-count`, `buffer-idle`, `enabled`,
-`channel`. Env-var names are accepted as aliases, e.g. `config llm_endpoint get`.
+`vision-model`, `reasoning-effort`, `hindsight-url`, `hindsight-key`,
+`hindsight-timeout`, `hermes-timeout`, `media-cache-dir`, `media-max-bytes`,
+`recall-budget`, `recall-limit`, `chance`, `cooldown`, `buffer-count`,
+`buffer-idle`, `enabled`, `channel`. Env-var names are accepted as aliases,
+e.g. `config llm_endpoint get`.
 
 Secrets are stored in Red Config (never echoed): `get` and `list` show only
 `<oculto, N caracteres>`. A blank `set` clears the chat override and falls back

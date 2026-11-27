@@ -502,6 +502,7 @@ class GamoAICog(commands.Cog):
                     guild_id=chat_message.guild_id,
                     channel_id=chat_message.channel_id,
                     model=model,
+                    reasoning_effort=self.settings.reasoning_effort if use_vision else None,
                 )
         else:
             reply = await client.chat(
@@ -509,6 +510,7 @@ class GamoAICog(commands.Cog):
                 guild_id=chat_message.guild_id,
                 channel_id=chat_message.channel_id,
                 model=model,
+                reasoning_effort=self.settings.reasoning_effort if use_vision else None,
             )
         if not reply:
             return

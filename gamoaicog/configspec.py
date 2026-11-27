@@ -73,6 +73,11 @@ ENV_SETTINGS: tuple[SettingSpec, ...] = (
         description="Modelo usado en turnos con imágenes.",
     ),
     SettingSpec(
+        key="reasoning_effort", env="REASONING_EFFORT", name="reasoning-effort",
+        aliases=("reasoning_effort",), example="low",
+        description="Esfuerzo de razonamiento en turnos con imágenes; vacío usa el default del modelo.",
+    ),
+    SettingSpec(
         key="hindsight_api_url", env="HINDSIGHT_API_URL", name="hindsight-url",
         aliases=("hindsight_api_url", "hindsight-endpoint"),
         example="http://localhost:8888", url=True,
