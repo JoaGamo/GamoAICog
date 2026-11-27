@@ -9,7 +9,7 @@ Architecture is summarized here and in `docs/DEPLOYMENT.md`; change the locked b
 ```
 distribution.yaml   Hermes profile distribution manifest (gamoaibot)
 config.yaml         Non-secret profile defaults (native memory disabled)
-PERSONA.md          Copy into the profile's SOUL.md
+SOUL.md             Profile persona (installed as the profile's SOUL.md)
 info.json           Repo metadata for Red's Downloader (`[p]cog repo add`)
 gamoaicog/          Installable cog package (has its own info.json + setup())
 deploy/             profile.env.example, cog.env.example, systemd unit
@@ -54,8 +54,38 @@ All commands require the Red bot owner ID.
 | `gamoai endpoint chat/vision <url>` | Runtime endpoint override |
 | `gamoai purge bank <guild_id> <user_id>` | Delete one user bank |
 | `gamoai purge guild <guild_id>` | Delete one guild bank |
+| `gamoai config <setting> set/get` | Read or change any setting, including keys — see below |
 
-API keys stay in env, never in Red config or Discord commands.
+API keys stay in env or in Red Config, never in Discord commands. The owner-only
+check is inherited from the `gamoai` group, so it holds for every subcommand.
+
+## Chat config
+
+All settings are owner-only and work in DMs. Every command's help includes an
+exact example; endpoint examples always include the scheme.
+
+```text
+[p]gamoai config endpoint set http://localhost
+[p]gamoai config endpoint get
+[p]gamoai config hindsight-url set http://localhost:8888
+[p]gamoai config hindsight-key set replace-with-hindsight-key
+[p]gamoai config hindsight-key get
+[p]gamoai config chance set 20
+[p]gamoai config channel add 123456789012345678
+[p]gamoai config list
+```
+
+Settings: `endpoint`, `key`, `model`, `vision-endpoint`, `vision-key`,
+`vision-model`, `hindsight-url`, `hindsight-key`, `hindsight-timeout`,
+`hermes-timeout`, `media-cache-dir`, `media-max-bytes`, `recall-budget`,
+`recall-limit`, `chance`, `cooldown`, `buffer-count`, `buffer-idle`, `enabled`,
+`channel`. Env-var names are accepted as aliases, e.g. `config llm_endpoint get`.
+
+Secrets are stored in Red Config (never echoed): `get` and `list` show only
+`<oculto, N caracteres>`. A blank `set` clears the chat override and falls back
+to the environment. URL settings require `http://` or `https://`. Changes apply
+immediately; no cog reload is needed. API_SERVER_* belong to the Hermes profile,
+not the cog, so they are configured in that profile's `.env` only.
 
 ## Tests
 

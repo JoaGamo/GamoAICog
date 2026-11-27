@@ -16,6 +16,14 @@ from redbot.core import Config, checks, commands
 from redbot.core.bot import Red
 
 from .buffer import ChannelManager
+from .configspec import (
+    ALL_SETTINGS,
+    ENV_SETTINGS,
+    SettingSpec,
+    apply_overrides,
+    coerce,
+    display,
+)
 from .constants import (
     SOURCE_PASSIVE,
     SOURCE_REPLY,
@@ -68,24 +76,61 @@ def split_message(text: str, limit: int = 1900) -> list[str]:
     return chunks
 
 
+def _config_commands(parent: commands.Group, spec: SettingSpec):
+    """Build the set/get pair for one setting.
+
+    The caller must assign all three returned objects as class attributes:
+    Red's Cog metaclass only binds commands present in the class namespace.
+    """
+    suffix = spec.name.replace("-", "_")
+
+    @parent.group(name=spec.name, aliases=list(spec.aliases), autohelp=False)
+    async def group(self, ctx: commands.Context) -> None:
+        """Show this setting's help."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @group.command(name="set")
+    async def setter(self, ctx: commands.Context, *, value: str = "") -> None:
+        """Set this setting; blank removes the chat override."""
+        await self._config_set(ctx, spec, value)
+
+    @group.command(name="get")
+    async def getter(self, ctx: commands.Context) -> None:
+        """Show the active value; secrets stay masked."""
+        await self._config_get(ctx, spec)
+
+    # f-strings are not docstrings, and Red's .help setter is a no-op.
+    group._help_override = f"{spec.description}\n\nExample: {spec.command} set {spec.example}"
+    setter._help_override = f"Set {spec.label}. Blank value removes the chat override.\n\nExample: {spec.command} set {spec.example}"
+    getter._help_override = f"Show the active {spec.label}; secrets stay masked.\n\nExample: {spec.command} get"
+    group.__name__ = f"config_{suffix}"
+    setter.__name__ = f"config_{suffix}_set"
+    getter.__name__ = f"config_{suffix}_get"
+    return group, setter, getter
+
+
+def _all_config_commands(parent: commands.Group) -> dict[str, tuple]:
+    return {spec.key: _config_commands(parent, spec) for spec in ALL_SETTINGS}
+
+
 class GamoAICog(commands.Cog):
     """Casual Hermes-backed chatter with guild-scoped Hindsight memory."""
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
         self.config = Config.get_conf(self, identifier=CONFIG_IDENTIFIER, force_registration=True)
-        self.config.register_global(
-            enabled=True,
-            channels=[],
-            chance=0.2,
-            cooldown=30.0,
-            buffer_count=15,
-            buffer_idle=180.0,
-            llm_endpoint=None,
-            llm_model=None,
-            vision_endpoint=None,
-            vision_model=None,
-        )
+        defaults: dict[str, Any] = {
+            "enabled": True,
+            "channels": [],
+            "chance": 0.2,
+            "cooldown": 30.0,
+            "buffer_count": 15,
+            "buffer_idle": 180.0,
+        }
+        for spec in ENV_SETTINGS:
+            defaults.setdefault(spec.key, None)
+        self.config.register_global(**defaults)
         self.settings = Settings.from_env()
         self.manager = ChannelManager()
         self._session: aiohttp.ClientSession | None = None
@@ -131,14 +176,9 @@ class GamoAICog(commands.Cog):
         self._session = None
 
     async def refresh_settings(self) -> None:
-        """Env is the base; owner Discord commands may override endpoints/models."""
+        """Environment is the base; every chat override is layered on top."""
         cfg = await self.config.all()
-        self.settings = self.settings.with_overrides(
-            llm_endpoint=cfg.get("llm_endpoint") or self.settings.llm_endpoint,
-            llm_model=cfg.get("llm_model") or self.settings.llm_model,
-            vision_endpoint=cfg.get("vision_endpoint") or self.settings.vision_endpoint,
-            vision_model=cfg.get("vision_model") or self.settings.vision_model,
-        )
+        self.settings = apply_overrides(Settings.from_env(), cfg)
         self.manager.set_thresholds(int(cfg["buffer_count"]), float(cfg["buffer_idle"]))
         assert self._session is not None
         self._hindsight = HindsightClient(
@@ -168,6 +208,30 @@ class GamoAICog(commands.Cog):
         else:
             self._hermes_vision = None
         self._media = MediaPipeline(self.settings.media_cache_dir, self.settings.media_max_bytes, self._session)
+
+    # ------------------------------------------------------------ config helpers
+
+    async def _config_set(self, ctx: commands.Context, spec: SettingSpec, raw: str) -> None:
+        try:
+            value = coerce(spec, raw)
+        except ValueError as exc:
+            await ctx.send(str(exc))
+            return
+        await getattr(self.config, spec.key).set(value)
+        await self.refresh_settings()
+        state = "sin override, usa entorno" if value is None else display(spec, value)
+        await ctx.send(f"{spec.label}: {state}.")
+
+    async def _config_get(self, ctx: commands.Context, spec: SettingSpec) -> None:
+        cfg = await self.config.all()
+        stored = cfg.get(spec.key)
+        if spec.env and (stored is None or stored == ""):
+            value = getattr(self.settings, spec.key)
+            source = "entorno"
+        else:
+            value = stored
+            source = "chat"
+        await ctx.send(f"{spec.label}: {display(spec, value)} ({source}).")
 
     # ------------------------------------------------------------------ helpers
 
@@ -453,6 +517,98 @@ class GamoAICog(commands.Cog):
         """Manage GamoAI (bot owner only)."""
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
+
+    @gamoai.group(name="config", autohelp=False)
+    async def gamoai_config(self, ctx: commands.Context) -> None:
+        """Change any setting by DM. Bot owner only.
+
+        Example: [p]gamoai config endpoint set http://localhost
+        """
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    # All three objects per setting must live in the class namespace so Red
+    # binds the group and its set/get children to this cog instance.
+    _cfg_commands = _all_config_commands(gamoai_config)
+    (config_endpoint, config_endpoint_set, config_endpoint_get) = _cfg_commands["llm_endpoint"]
+    (config_key, config_key_set, config_key_get) = _cfg_commands["llm_api_key"]
+    (config_model, config_model_set, config_model_get) = _cfg_commands["llm_model"]
+    (config_vision_endpoint, config_vision_endpoint_set, config_vision_endpoint_get) = _cfg_commands["vision_endpoint"]
+    (config_vision_key, config_vision_key_set, config_vision_key_get) = _cfg_commands["vision_api_key"]
+    (config_vision_model, config_vision_model_set, config_vision_model_get) = _cfg_commands["vision_model"]
+    (config_hindsight_url, config_hindsight_url_set, config_hindsight_url_get) = _cfg_commands["hindsight_api_url"]
+    (config_hindsight_key, config_hindsight_key_set, config_hindsight_key_get) = _cfg_commands["hindsight_api_key"]
+    (config_hindsight_timeout, config_hindsight_timeout_set, config_hindsight_timeout_get) = _cfg_commands["hindsight_timeout"]
+    (config_hermes_timeout, config_hermes_timeout_set, config_hermes_timeout_get) = _cfg_commands["hermes_timeout"]
+    (config_media_cache_dir, config_media_cache_dir_set, config_media_cache_dir_get) = _cfg_commands["media_cache_dir"]
+    (config_media_max_bytes, config_media_max_bytes_set, config_media_max_bytes_get) = _cfg_commands["media_max_bytes"]
+    (config_recall_budget, config_recall_budget_set, config_recall_budget_get) = _cfg_commands["recall_budget"]
+    (config_recall_limit, config_recall_limit_set, config_recall_limit_get) = _cfg_commands["recall_limit"]
+    (config_chance, config_chance_set, config_chance_get) = _cfg_commands["chance"]
+    (config_cooldown, config_cooldown_set, config_cooldown_get) = _cfg_commands["cooldown"]
+    (config_buffer_count, config_buffer_count_set, config_buffer_count_get) = _cfg_commands["buffer_count"]
+    (config_buffer_idle, config_buffer_idle_set, config_buffer_idle_get) = _cfg_commands["buffer_idle"]
+    (config_enabled, config_enabled_set, config_enabled_get) = _cfg_commands["enabled"]
+
+    @gamoai_config.group(name="channel", autohelp=False)
+    async def config_channel(self, ctx: commands.Context) -> None:
+        """Allowlist channels by ID (works in DMs).
+
+        Example: [p]gamoai config channel add 123456789012345678
+        """
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @config_channel.command(name="add")
+    async def config_channel_add(self, ctx: commands.Context, channel_id: int) -> None:
+        """Allow a channel by ID.
+
+        Example: [p]gamoai config channel add 123456789012345678
+        """
+        async with self.config.channels() as channels:
+            if channel_id not in channels:
+                channels.append(channel_id)
+        await ctx.tick()
+
+    @config_channel.command(name="remove")
+    async def config_channel_remove(self, ctx: commands.Context, channel_id: int) -> None:
+        """Remove a channel by ID.
+
+        Example: [p]gamoai config channel remove 123456789012345678
+        """
+        async with self.config.channels() as channels:
+            if channel_id in channels:
+                channels.remove(channel_id)
+        await ctx.tick()
+
+    @config_channel.command(name="list")
+    async def config_channel_list(self, ctx: commands.Context) -> None:
+        """List allowed channel IDs.
+
+        Example: [p]gamoai config channel list
+        """
+        channels = await self.config.channels()
+        await ctx.send("Canales: " + (", ".join(str(cid) for cid in channels) or "ninguno"))
+
+    @gamoai_config.command(name="list")
+    async def config_list(self, ctx: commands.Context) -> None:
+        """Show every setting, its source and its exact example.
+
+        Example: [p]gamoai config list
+        """
+        cfg = await self.config.all()
+        lines = []
+        for spec in ALL_SETTINGS:
+            stored = cfg.get(spec.key)
+            if spec.env and (stored is None or stored == ""):
+                value = getattr(self.settings, spec.key)
+                source = "entorno"
+            else:
+                value = stored
+                source = "chat"
+            lines.append(f"{spec.name}: {display(spec, value)} ({source})")
+        for chunk in split_message("\n".join(lines), 1900):
+            await ctx.send(f"```{chunk}```")
 
     @gamoai.command(name="status")
     async def gamoai_status(self, ctx: commands.Context) -> None:

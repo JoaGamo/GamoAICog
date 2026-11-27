@@ -8,7 +8,7 @@ application or bot token is needed for production; Red owns Discord auth.
 ```bash
 # From this checkout (or after `hermes profile install <repo> --name gamoaibot`):
 cp config.yaml ~/.hermes/profiles/gamoaibot/config.yaml
-cp PERSONA.md ~/.hermes/profiles/gamoaibot/SOUL.md
+cp SOUL.md ~/.hermes/profiles/gamoaibot/SOUL.md
 cp deploy/profile.env.example ~/.hermes/profiles/gamoaibot/.env
 $EDITOR ~/.hermes/profiles/gamoaibot/.env        # fill values; never commit
 mkdir -p runtime
@@ -56,6 +56,13 @@ There is one canonical cog-side env file: `cog/.env` (gitignored). `deploy/cog.e
 For a manual install instead of Downloader, copy the `gamoaicog/` directory into the instance's CogManager install path (`<instance_data>/cogs/CogManager/cogs/`), not just `<instance_data>/cogs/`. `cog/gamoai.py` is a legacy wrapper only.
 
 Then in Discord, as bot owner: `[p]gamoai status`, `[p]gamoai channel add #test`. Use `[p]gamoai chance 0` if you want no random chatter.
+
+Every setting can alternatively be set or read by the bot owner in DMs via
+`[p]gamoai config <setting> set/get`, including `HINDSIGHT_API_KEY` and all
+other keys. Chat values are stored in Red Config and take precedence over the
+service environment; secret values are never echoed back. Each command's help
+prints an exact example, e.g. `[p]gamoai config endpoint set http://localhost`.
+See the README "Chat config" section for the full list.
 
 Enable Message Content intent on the bot application, or the cog will not see
 message text.
