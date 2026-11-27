@@ -83,31 +83,40 @@ def _config_commands(parent: commands.Group, spec: SettingSpec):
     Red's Cog metaclass only binds commands present in the class namespace.
     """
     suffix = spec.name.replace("-", "_")
+    base = f"config_{suffix}"
 
-    @parent.group(name=spec.name, aliases=list(spec.aliases), autohelp=False)
     async def group(self, ctx: commands.Context) -> None:
         """Show this setting's help."""
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
-    @group.command(name="set")
     async def setter(self, ctx: commands.Context, *, value: str = "") -> None:
         """Set this setting; blank removes the chat override."""
         await self._config_set(ctx, spec, value)
 
-    @group.command(name="get")
     async def getter(self, ctx: commands.Context) -> None:
         """Show the active value; secrets stay masked."""
         await self._config_get(ctx, spec)
 
+    # discord.py computes the command signature at decoration time. It skips
+    # the leading `self` and `ctx` parameters only when is_inside_class() reads
+    # a class-like __qualname__. These helpers are defined inside a function,
+    # so the default qualname ends in '<locals>'; without this, `ctx` is parsed
+    # as a user argument and invocation fails with "Converting to 'Context'
+    # failed for parameter 'ctx'". Both names must be set BEFORE decorating.
+    for func, tail in ((group, ""), (setter, "_set"), (getter, "_get")):
+        func.__name__ = f"{base}{tail}"
+        func.__qualname__ = f"GamoAICog.{base}{tail}"
+
+    group_cmd = parent.group(name=spec.name, aliases=list(spec.aliases), autohelp=False)(group)
+    setter_cmd = group_cmd.command(name="set")(setter)
+    getter_cmd = group_cmd.command(name="get")(getter)
+
     # f-strings are not docstrings, and Red's .help setter is a no-op.
-    group._help_override = f"{spec.description}\n\nExample: {spec.command} set {spec.example}"
-    setter._help_override = f"Set {spec.label}. Blank value removes the chat override.\n\nExample: {spec.command} set {spec.example}"
-    getter._help_override = f"Show the active {spec.label}; secrets stay masked.\n\nExample: {spec.command} get"
-    group.__name__ = f"config_{suffix}"
-    setter.__name__ = f"config_{suffix}_set"
-    getter.__name__ = f"config_{suffix}_get"
-    return group, setter, getter
+    group_cmd._help_override = f"{spec.description}\n\nExample: {spec.command} set {spec.example}"
+    setter_cmd._help_override = f"Set {spec.label}. Blank value removes the chat override.\n\nExample: {spec.command} set {spec.example}"
+    getter_cmd._help_override = f"Show the active {spec.label}; secrets stay masked.\n\nExample: {spec.command} get"
+    return group_cmd, setter_cmd, getter_cmd
 
 
 def _all_config_commands(parent: commands.Group) -> dict[str, tuple]:

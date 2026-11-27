@@ -90,6 +90,17 @@ def test_every_config_command_has_set_get_and_an_exact_example():
         assert "Example:" in groups[name].help
 
 
+def test_config_commands_do_not_parse_ctx_as_a_user_argument():
+    """Red must skip self and ctx; otherwise invocation dies in conversion."""
+    config = _config_group()
+    for item in config.commands:
+        commands_to_check = [item, *getattr(item, "commands", ())]
+        for command in commands_to_check:
+            assert "<locals>" not in command.callback.__qualname__, command.qualified_name
+            assert "self" not in command.params, command.qualified_name
+            assert "ctx" not in command.params, command.qualified_name
+
+
 @pytest.mark.asyncio
 async def test_endpoint_set_validates_the_http_prefix_and_applies_the_value(cog):
     ctx = FakeCtx()
