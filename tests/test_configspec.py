@@ -100,3 +100,30 @@ def test_blank_overrides_fall_back_to_environment():
     settings = apply_overrides(Settings.from_env(BASE_ENV), cfg)
     assert settings.llm_endpoint == BASE_ENV["LLM_ENDPOINT"]
     assert settings.hindsight_api_key == BASE_ENV["HINDSIGHT_API_KEY"]
+
+
+def test_vision_inherits_chat_overrides_layered_on_environment():
+    env = {"LLM_API_KEY": "env-key"}
+    cfg = {"llm_endpoint": "http://chat.test/v1", "llm_model": "chat-model"}
+    settings = apply_overrides(Settings.from_env(env), cfg)
+
+    assert settings.llm_endpoint == "http://chat.test/v1"
+    assert settings.vision_endpoint == "http://chat.test/v1"
+    assert settings.vision_api_key == "env-key"
+    assert settings.vision_model == "chat-model"
+    assert (settings.vision_endpoint, settings.vision_api_key) == (
+        settings.llm_endpoint, settings.llm_api_key
+    )
+
+
+def test_explicit_vision_override_survives_the_fallback():
+    env = {"LLM_API_KEY": "env-key"}
+    cfg = {
+        "llm_endpoint": "http://chat.test/v1",
+        "vision_endpoint": "http://vision.test/v1",
+        "vision_api_key": "vision-key",
+    }
+    settings = apply_overrides(Settings.from_env(env), cfg)
+
+    assert settings.vision_endpoint == "http://vision.test/v1"
+    assert settings.vision_api_key == "vision-key"

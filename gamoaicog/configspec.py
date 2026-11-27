@@ -212,4 +212,4 @@ def apply_overrides(settings: Settings, cfg: Mapping[str, Any]) -> Settings:
         if value is None or value == "":
             continue
         changes[spec.key] = coerce(spec, str(value))
-    return settings.with_overrides(**changes)
+    return settings.with_overrides(**changes).with_vision_fallback()

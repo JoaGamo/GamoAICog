@@ -12,7 +12,7 @@ LLM = {
 
 
 def test_vision_settings_fall_back_to_llm_settings():
-    settings = Settings.from_env(dict(LLM))
+    settings = Settings.from_env(dict(LLM)).with_vision_fallback()
 
     assert settings.vision_endpoint == "http://llm.test/v1"
     assert settings.vision_api_key == "chat-secret"
@@ -26,7 +26,7 @@ def test_explicit_vision_settings_override_the_fallback():
         "VISION_API_KEY": "vision-secret",
         "VISION_MODEL": "vision-model",
     }
-    settings = Settings.from_env(env)
+    settings = Settings.from_env(env).with_vision_fallback()
 
     assert settings.vision_endpoint == "http://vision.test/v1"
     assert settings.vision_api_key == "vision-secret"

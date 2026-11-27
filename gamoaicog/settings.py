@@ -58,10 +58,9 @@ class Settings:
             llm_endpoint=llm_endpoint,
             llm_api_key=llm_api_key,
             llm_model=llm_model,
-            # Blank VISION_* means "same as chat". One multimodal model or two.
-            vision_endpoint=get("VISION_ENDPOINT") or llm_endpoint,
-            vision_api_key=get("VISION_API_KEY") or llm_api_key,
-            vision_model=get("VISION_MODEL") or llm_model,
+            vision_endpoint=get("VISION_ENDPOINT"),
+            vision_api_key=get("VISION_API_KEY"),
+            vision_model=get("VISION_MODEL"),
             hindsight_api_url=get("HINDSIGHT_API_URL", "http://localhost:8888"),
             hindsight_api_key=get("HINDSIGHT_API_KEY"),
             hindsight_timeout=_float(e, "HINDSIGHT_TIMEOUT", 30.0),
@@ -70,6 +69,20 @@ class Settings:
             media_max_bytes=_int(e, "MEDIA_MAX_BYTES", 20 * 1024 * 1024),
             recall_budget=get("RECALL_BUDGET", "mid"),
             recall_limit=_int(e, "RECALL_LIMIT", 5),
+        )
+
+    def with_vision_fallback(self) -> "Settings":
+        """Blank VISION_* inherits the effective LLM_* values.
+
+        Must run after chat overrides are layered: the LLM endpoint may come
+        from Red Config while the environment only holds a key. Resolving the
+        fallback earlier leaves the vision client with an empty base URL.
+        """
+        return replace(
+            self,
+            vision_endpoint=self.vision_endpoint or self.llm_endpoint,
+            vision_api_key=self.vision_api_key or self.llm_api_key,
+            vision_model=self.vision_model or self.llm_model,
         )
 
     @property
