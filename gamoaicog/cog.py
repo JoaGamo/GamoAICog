@@ -423,7 +423,10 @@ class GamoAICog(commands.Cog):
         if not cfg["enabled"]:
             log.info("msg ignored: AI toggled off by owner, channel=%s", message.channel.id)
             return
-        blocked = blocked_topic_reason(message.content)
+        bot_user = getattr(self.bot, "user", None)
+        blocked = blocked_topic_reason(
+            message.content, bot_id=getattr(bot_user, "id", None)
+        )
         if blocked is not None:
             log.info("msg ignored: blocked topic=%s, channel=%s", blocked, message.channel.id)
             return
@@ -433,8 +436,8 @@ class GamoAICog(commands.Cog):
         )
 
         channel_id = message.channel.id
-        mention = self._is_mention(message, self.bot.user)
-        reply = self._is_reply_to_bot(message, self.bot.user)
+        mention = self._is_mention(message, bot_user)
+        reply = self._is_reply_to_bot(message, bot_user)
         async with self.manager.lock(channel_id):
             decision = should_reply(
                 is_bot=message.author.bot,

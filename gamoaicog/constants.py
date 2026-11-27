@@ -51,16 +51,23 @@ _BLOCKED_PATTERNS = (
 )
 
 
-def blocked_topic_reason(text: str) -> str | None:
-    """Which guardrail matched, without echoing the message text."""
+def blocked_topic_reason(text: str, bot_id: int | None = None) -> str | None:
+    """Which guardrail matched, without echoing the message text.
+
+    A long number equal to our own ID is the bot's mention token, not PII.
+    Pass it so the message reaches the trigger policy and can force a reply.
+    """
+    own_id = str(bot_id) if bot_id is not None else None
     for name, pattern in _BLOCKED_PATTERNS:
-        if pattern.search(text or ""):
+        for match in pattern.finditer(text or ""):
+            if name == "long_number" and own_id is not None and match.group() == own_id:
+                continue
             return name
     return None
 
 
-def is_blocked_topic(text: str) -> bool:
-    return blocked_topic_reason(text) is not None
+def is_blocked_topic(text: str, bot_id: int | None = None) -> bool:
+    return blocked_topic_reason(text, bot_id) is not None
 
 
 def clean_text(text: str) -> str:
