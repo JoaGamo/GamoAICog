@@ -120,7 +120,10 @@ class HindsightClient:
         await self._request(
             "POST",
             self._url(bank_id, "/memories"),
-            json={"items": items, "async": False},
+            # Async consolidation: Hindsight returns immediately with an operation
+            # id. Synchronous retain can take minutes on a loaded server and was
+            # timing out the cog's 30s client timeout.
+            json={"items": items, "async": True},
         )
 
     async def purge(self, bank_id: str) -> bool:

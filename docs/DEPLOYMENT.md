@@ -84,4 +84,5 @@ message text.
 - Profiles do not sandbox the filesystem. Restrict toolsets and keep `terminal` disabled; the explicit `terminal.cwd` is defense in depth only.
 - The cog ignores NSFW channels by design. Test in a non-NSFW channel.
 - Hindsight banks are created lazily by retain. Deleting a bank with the purge command is a real DELETE against Hindsight; there is no undo.
+- Retains are sent with `async: true`: Hindsight queues the operation and the cog does not wait for consolidation. A recall immediately after a retain can lag; this is expected, not a failed write.
 - Purging already-flushed memories for a single deleted message is not implemented in v1.

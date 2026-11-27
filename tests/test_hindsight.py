@@ -35,7 +35,7 @@ def test_retain_posts_items_with_async_false():
 
                 calls = recorded(mocked, "POST", MEMORIES_URL)
                 assert len(calls) == 1
-                assert calls[0].kwargs["json"] == {"items": items, "async": False}
+                assert calls[0].kwargs["json"] == {"items": items, "async": True}
                 assert calls[0].kwargs["headers"]["Authorization"] == "Bearer hindsight-secret"
 
     asyncio.run(run())
