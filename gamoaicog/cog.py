@@ -550,6 +550,7 @@ class GamoAICog(commands.Cog):
     (config_vision_endpoint, config_vision_endpoint_set, config_vision_endpoint_get) = _cfg_commands["vision_endpoint"]
     (config_vision_key, config_vision_key_set, config_vision_key_get) = _cfg_commands["vision_api_key"]
     (config_vision_model, config_vision_model_set, config_vision_model_get) = _cfg_commands["vision_model"]
+    (config_reasoning_effort, config_reasoning_effort_set, config_reasoning_effort_get) = _cfg_commands["reasoning_effort"]
     (config_hindsight_url, config_hindsight_url_set, config_hindsight_url_get) = _cfg_commands["hindsight_api_url"]
     (config_hindsight_key, config_hindsight_key_set, config_hindsight_key_get) = _cfg_commands["hindsight_api_key"]
     (config_hindsight_timeout, config_hindsight_timeout_set, config_hindsight_timeout_get) = _cfg_commands["hindsight_timeout"]

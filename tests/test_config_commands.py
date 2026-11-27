@@ -90,6 +90,18 @@ def test_every_config_command_has_set_get_and_an_exact_example():
         assert "Example:" in groups[name].help
 
 
+def test_every_config_command_is_bound_in_the_class_namespace():
+    """Unbound generated commands fail at invocation with a missing ctx."""
+    groups = {c.name: c for c in _config_group().commands}
+    for spec in ALL_SETTINGS:
+        base = f"config_{spec.name.replace('-', '_')}"
+        group = groups[spec.name]
+        children = {c.name: c for c in group.commands}
+        assert getattr(GamoAICog, base) is group, spec.key
+        assert getattr(GamoAICog, f"{base}_set") is children["set"], spec.key
+        assert getattr(GamoAICog, f"{base}_get") is children["get"], spec.key
+
+
 def test_config_commands_do_not_parse_ctx_as_a_user_argument():
     """Red must skip self and ctx; otherwise invocation dies in conversion."""
     config = _config_group()
