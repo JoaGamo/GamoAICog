@@ -41,6 +41,14 @@ Set the cog's `LLM_ENDPOINT` to the same URL. Keep the API unreachable from
 untrusted networks; if several profiles share the port, firewall changes affect
 all of them.
 
+The four `API_SERVER_*` values are read only by this profile, not by the cog, so
+they cannot be changed with `[p]gamoai config`. Editing the profile `.env`
+requires restarting the API server or gateway process before the new values are
+used. The cog's `LLM_API_KEY` must stay equal to `API_SERVER_KEY`; that side can
+be changed in Discord with `[p]gamoai config key set`, with no reload. See
+[How to configure GamoAI from Discord](howto-configure-from-discord.md) under
+"API_SERVER_* (the Hermes profile side)".
+
 ## 2. Red cog
 
 On the Red host (which needs git access to the repo):
@@ -62,7 +70,10 @@ Every setting can alternatively be set or read by the bot owner in DMs via
 other keys. Chat values are stored in Red Config and take precedence over the
 service environment; secret values are never echoed back. Each command's help
 prints an exact example, e.g. `[p]gamoai config endpoint set http://localhost`.
-See the README "Chat config" section for the full list.
+See the README "Chat config" section for the full list, or read the
+[configuration reference](config-reference.md) and the
+[Discord configuration how-to](howto-configure-from-discord.md) for every
+setting, default, constraint and reload rule.
 
 Enable Message Content intent on the bot application, or the cog will not see
 message text.

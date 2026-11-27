@@ -12,7 +12,8 @@ config.yaml         Non-secret profile defaults (native memory disabled)
 SOUL.md             Profile persona (installed as the profile's SOUL.md)
 info.json           Repo metadata for Red's Downloader (`[p]cog repo add`)
 gamoaicog/          Installable cog package (has its own info.json + setup())
-deploy/             profile.env.example, cog.env.example, systemd unit
+deploy/             profile.env.example, cog.env.example, test runner
+docs/               Deployment + Discord configuration guides
 cog/gamoai.py       Legacy single-file entry point (manual installs only)
 tests/              Unit + opt-in integration tests
 runtime/            Local-only media cache and terminal cwd (gitignored)
@@ -84,8 +85,12 @@ Settings: `endpoint`, `key`, `model`, `vision-endpoint`, `vision-key`,
 Secrets are stored in Red Config (never echoed): `get` and `list` show only
 `<oculto, N caracteres>`. A blank `set` clears the chat override and falls back
 to the environment. URL settings require `http://` or `https://`. Changes apply
-immediately; no cog reload is needed. API_SERVER_* belong to the Hermes profile,
-not the cog, so they are configured in that profile's `.env` only.
+immediately; no cog reload is needed.
+
+Full list of settings, defaults and constraints: [Configuration reference](docs/config-reference.md).
+Step-by-step guide, including the `API_SERVER_*` variables (Hermes profile side;
+changing them needs an API server/gateway restart and a matching `LLM_API_KEY`):
+[How to configure GamoAI from Discord](docs/howto-configure-from-discord.md).
 
 ## Tests
 
